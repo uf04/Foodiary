@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ recipe.title }} - 레시피 상세</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f5f6f7;
+            padding: 50px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #03C75A;
+            padding-bottom: 20px;
+        }
+
+        .title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #03C75A;
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
+
+        /* 재료 리스트 스타일 */
+        .ing-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ing-item {
+            background-color: #f0fbf4;
+            color: #333;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* 조리 순서 스타일 */
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .step-item::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background-color: #03C75A;
+            color: #fff;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #555;
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 0;
+            border-radius: 10px;
+            margin-top: 40px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">{{ recipe.title }}</h1>
+            <p class="desc">{{ recipe.desc }}</p>
+        </div>
+
+        <h2 class="section-title">🥕 준비 재료</h2>
+        <div class="ing-list">
+            {% for ing in recipe.ingredients %}
+                <span class="ing-item">{{ ing }}</span>
+            {% endfor %}
+        </div>
+
+        <h2 class="section-title">🍳 조리 순서</h2>
+        <ul class="step-list">
+            {% for step in recipe.steps %}
+                <li class="step-item">{{ step }}</li>
+            {% endfor %}
+        </ul>
+
+        <a href="/" class="back-btn">다시 검색하기</a>
+    </div>
+
+</body>
+</html>
