@@ -3,218 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>네이버 블로그 레시피 검색</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <title>Foodiary - 나만의 푸드 다이어리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* [퍼블리싱] 기존 스타일 유지 */
+        /* [퍼블리싱] 초기화 및 변수 설정 */
+        :root {
+            --naver-green: #03C75A;
+            --bg-color: #f5f6f7;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f5f6f7;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding-top: 100px;
+            padding-top: 120px; /* 네비게이션 바 높이만큼 여백 */
         }
 
-        .logo-area { margin-bottom: 40px; text-align: center; }
-        .logo-area h1 { color: #03C75A; font-size: 40px; font-weight: 700; letter-spacing: -1px; }
-
-        .search-container {
+        /* 1. 상단 고정 네비게이션 바 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 580px;
-            position: relative;
-            padding: 0 20px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
         }
+
+        .nav-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center; /* 수직 중앙 정렬 */
+            height: 60px;
+            padding: 0 20px; /* 좌우 여백 추가 */
+        }
+
+        /* [NEW] 로고 스타일 */
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 900; /* 아주 굵게 */
+            color: var(--naver-green);
+            margin-right: 20px;
+            cursor: pointer;
+            letter-spacing: -0.5px;
+            font-family: sans-serif; /* 영문 로고 느낌 */
+        }
+
+        /* 탭 메뉴들을 감싸는 컨테이너 */
+        .nav-tabs {
+            flex: 1; /* 남은 공간 모두 차지 */
+            display: flex;
+            height: 100%;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px; /* 공간 확보를 위해 살짝 줄임 */
+            font-weight: 700;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            height: 100%; /* 부모 높이 꽉 채우기 */
+        }
+
+        .nav-item:hover { color: #555; }
+        
+        .nav-item.active {
+            color: var(--naver-green);
+            border-bottom: 3px solid var(--naver-green);
+        }
+
+        /* 2. 공통 레이아웃 */
+        .content-area {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            display: none;
+        }
+        .content-area.active { display: block; }
+
+        /* [탭1] 검색 스타일 */
+        .logo-area { margin-bottom: 30px; text-align: center; margin-top: 20px;}
+        .logo-area h1 { color: var(--naver-green); font-size: 36px; font-weight: 700; letter-spacing: -1px; }
 
         .search-form {
             display: flex;
             width: 100%;
-            border: 2px solid #03C75A;
+            border: 2px solid var(--naver-green);
             border-radius: 50px;
             background: #fff;
             padding: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: box-shadow 0.3s;
+            margin-bottom: 30px;
         }
-
-        .search-form:focus-within {
-            box-shadow: 0 5px 15px rgba(3, 199, 90, 0.2);
-        }
-
         .search-input {
             flex: 1;
             border: none;
             outline: none;
-            padding: 15px 25px;
-            font-size: 18px;
+            padding: 15px 20px;
+            font-size: 16px;
             border-radius: 50px 0 0 50px;
             background: transparent;
         }
-
         .search-btn {
-            background-color: #03C75A;
+            background-color: var(--naver-green);
             color: #fff;
             border: none;
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background-color 0.2s;
             flex-shrink: 0;
         }
 
-        .search-btn:hover { background-color: #02b350; }
-
-        .result-container {
-            width: 100%;
-            max-width: 580px;
-            margin-top: 30px;
-            padding: 0 20px;
-        }
-
+        /* 리스트 및 하트 스타일 */
         .result-list { list-style: none; }
-
-        .result-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+        .result-item-wrapper { position: relative; margin-bottom: 15px; }
+        .result-link { text-decoration: none; color: inherit; display: block; }
 
         .result-item {
             background: #fff;
             padding: 20px;
-            margin-bottom: 15px;
+            padding-right: 50px;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-
         .result-item:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-color: #03C75A;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--naver-green);
         }
 
-        .recipe-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
+        .recipe-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 8px; line-height: 1.4; }
         .recipe-desc { 
-            font-size: 14px; 
-            color: #666; 
-            margin-bottom: 12px; 
-            line-height: 1.5; 
-            word-break: keep-all;
-            /* 2줄 이상 넘어가면 말줄임표 처리 */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 14px; color: #666; margin-bottom: 12px; line-height: 1.5; 
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
+        .recipe-info { font-size: 12px; color: #999; display: flex; justify-content: space-between; }
+        .blogger-name { color: var(--naver-green); font-weight: bold; }
 
-        .recipe-info {
-            font-size: 12px;
-            color: #999;
-            display: flex;
-            justify-content: space-between;
+        .heart-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; font-size: 24px; cursor: pointer; z-index: 10;
+            color: #ccc; transition: transform 0.2s;
         }
-
-        .blogger-name { color: #03C75A; font-weight: bold; }
-
+        .heart-btn:hover { transform: scale(1.1); }
+        .heart-btn.liked { color: #ff4757; }
         .no-result { text-align: center; color: #888; padding: 40px; }
+        .my-header { margin-bottom: 20px; font-size: 20px; font-weight: 700; color: #333; padding-bottom: 10px; border-bottom: 2px solid #333; }
 
-        @media (max-width: 600px) {
-            body { padding-top: 50px; }
-            .logo-area h1 { font-size: 32px; }
-            .search-input { font-size: 16px; padding: 12px 20px; }
-            .search-btn { width: 50px; height: 50px; }
+        /* [탭3] 식단 플래너 스타일 */
+        .planner-header {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
         }
+        
+        .date-picker {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            color: #333;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+        }
+        .date-picker:focus { border-color: var(--naver-green); }
+
+        .meal-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border-left: 5px solid #ddd;
+            transition: all 0.3s;
+        }
+        .meal-card.breakfast { border-left-color: #ffaa00; }
+        .meal-card.lunch { border-left-color: #03C75A; }
+        .meal-card.dinner { border-left-color: #5d4dbb; }
+
+        .meal-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        .meal-input {
+            width: 100%; height: 80px; padding: 10px; border: 1px solid #eee; border-radius: 8px;
+            resize: none; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; outline: none; background-color: #fafafa;
+        }
+        .meal-input:focus { background-color: #fff; border-color: var(--naver-green); }
+        
+        .save-indicator {
+            font-size: 12px; color: #03C75A; text-align: right; margin-top: 5px; opacity: 0; transition: opacity 0.5s;
+        }
+        .save-indicator.show { opacity: 1; }
+
+        @media (max-width: 400px) {
+            .nav-logo { font-size: 18px; margin-right: 10px; }
+            .nav-item { font-size: 13px; }
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="logo-area">
-        <h1>BLOG RECIPE</h1>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-logo" onclick="switchTab('search')">Foodiary</div>
+            
+            <div class="nav-tabs">
+                <div class="nav-item active" onclick="switchTab('search')" id="tab-search">검색</div>
+                <div class="nav-item" onclick="switchTab('my')" id="tab-my">MY</div>
+                <div class="nav-item" onclick="switchTab('planner')" id="tab-planner">플래너</div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="section-search" class="content-area active">
+        <div class="logo-area">
+            <h1>RECIPE SEARCH</h1>
+        </div>
+        <div class="search-container">
+            <form class="search-form" id="searchForm">
+                <input type="text" class="search-input" id="ingredientInput" placeholder="재료를 입력하세요 (예: 떡볶이)" autocomplete="off">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+        <ul class="result-list" id="searchResultList"></ul>
     </div>
 
-    <div class="search-container">
-        <form class="search-form" id="searchForm">
-            <input type="text" class="search-input" id="ingredientInput" placeholder="재료를 입력하세요 (예: 삼겹살)" autocomplete="off">
-            <button type="submit" class="search-btn">🔍</button>
-        </form>
+    <div id="section-my" class="content-area">
+        <div class="my-header">💖 내가 찜한 레시피</div>
+        <ul class="result-list" id="myResultList"></ul>
     </div>
 
-    <div class="result-container">
-        <ul class="result-list" id="resultList">
-            </ul>
+    <div id="section-planner" class="content-area">
+        <div class="planner-header">
+            <input type="date" id="plannerDate" class="date-picker">
+        </div>
+
+        <div class="meal-card breakfast">
+            <div class="meal-title">🌞 아침 (Breakfast)</div>
+            <textarea id="input-breakfast" class="meal-input" placeholder="아침 메뉴를 입력하세요..."></textarea>
+            <div class="save-indicator" id="save-breakfast">저장됨 ✔</div>
+        </div>
+
+        <div class="meal-card lunch">
+            <div class="meal-title">🌿 점심 (Lunch)</div>
+            <textarea id="input-lunch" class="meal-input" placeholder="점심 메뉴를 입력하세요..."></textarea>
+            <div class="save-indicator" id="save-lunch">저장됨 ✔</div>
+        </div>
+
+        <div class="meal-card dinner">
+            <div class="meal-title">🌙 저녁 (Dinner)</div>
+            <textarea id="input-dinner" class="meal-input" placeholder="저녁 메뉴를 입력하세요..."></textarea>
+            <div class="save-indicator" id="save-dinner">저장됨 ✔</div>
+        </div>
     </div>
 
     <script>
+        // 1. 탭 전환 로직
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.content-area').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`section-${tabName}`).classList.add('active');
+
+            if(tabName === 'my') renderMyRecipes();
+            if(tabName === 'planner') loadMealPlan();
+        }
+
+        // 2. 검색 및 찜하기 로직
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
             const ingredient = document.getElementById('ingredientInput').value;
-            const resultList = document.getElementById('resultList');
+            const listEl = document.getElementById('searchResultList');
+            if(!ingredient.trim()) { alert("검색어를 입력해주세요!"); return; }
 
-            if(!ingredient.trim()) {
-                alert("재료를 입력해주세요!");
-                return;
-            }
-
-            resultList.innerHTML = '<li class="no-result">네이버 블로그에서 레시피를 찾는 중...</li>';
-
+            listEl.innerHTML = '<li class="no-result">레시피를 찾는 중...</li>';
             const formData = new FormData();
             formData.append('ingredient', ingredient);
 
-            fetch('/search', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
+            fetch('/search', { method: 'POST', body: formData })
+            .then(res => res.json())
             .then(data => {
-                resultList.innerHTML = '';
-
+                listEl.innerHTML = '';
                 if (data.status === 'success' && data.results.length > 0) {
-                    data.results.forEach(item => {
-                        const li = document.createElement('li');
-                        
-                        // [변경] 외부 링크로 이동, 새 창 열기 (target="_blank")
-                        li.innerHTML = `
-                            <a href="${item.link}" class="result-link" target="_blank">
-                                <div class="result-item">
-                                    <div class="recipe-title">${item.title}</div>
-                                    <div class="recipe-desc">${item.desc}</div>
-                                    <div class="recipe-info">
-                                        <span class="blogger-name">${item.blogger}</span>
-                                        <span>${item.postdate}</span>
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                        resultList.appendChild(li);
-                    });
+                    data.results.forEach(item => listEl.appendChild(createRecipeItem(item)));
                 } else {
-                    resultList.innerHTML = '<li class="no-result">검색 결과가 없습니다.</li>';
+                    listEl.innerHTML = '<li class="no-result">결과가 없습니다.</li>';
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                resultList.innerHTML = '<li class="no-result">오류가 발생했습니다.</li>';
+            .catch(err => { console.error(err); listEl.innerHTML = '<li class="no-result">오류가 발생했습니다.</li>'; });
+        });
+
+        function createRecipeItem(item) {
+            const li = document.createElement('li');
+            li.className = 'result-item-wrapper';
+            const isLiked = checkIsLiked(item.link);
+            const heartClass = isLiked ? 'liked' : '';
+            const heartIcon = isLiked ? '♥' : '♡';
+
+            li.innerHTML = `
+                <button class="heart-btn ${heartClass}" onclick="toggleLike(this, '${encodeURIComponent(JSON.stringify(item))}')">${heartIcon}</button>
+                <a href="${item.link}" class="result-link" target="_blank">
+                    <div class="result-item">
+                        <div class="recipe-title">${item.title}</div>
+                        <div class="recipe-desc">${item.desc}</div>
+                        <div class="recipe-info"><span class="blogger-name">${item.blogger}</span><span>${item.postdate}</span></div>
+                    </div>
+                </a>
+            `;
+            return li;
+        }
+
+        function toggleLike(btn, itemString) {
+            event.stopPropagation();
+            const item = JSON.parse(decodeURIComponent(itemString));
+            let myRecipes = JSON.parse(localStorage.getItem('myRecipes')) || [];
+            const existingIndex = myRecipes.findIndex(r => r.link === item.link);
+
+            if (existingIndex !== -1) {
+                myRecipes.splice(existingIndex, 1);
+                btn.classList.remove('liked');
+                btn.innerText = '♡';
+                if(document.getElementById('section-my').classList.contains('active')) renderMyRecipes();
+            } else {
+                myRecipes.push(item);
+                btn.classList.add('liked');
+                btn.innerText = '♥';
+            }
+            localStorage.setItem('myRecipes', JSON.stringify(myRecipes));
+        }
+
+        function checkIsLiked(link) {
+            const myRecipes = JSON.parse(localStorage.getItem('myRecipes')) || [];
+            return myRecipes.some(r => r.link === link);
+        }
+
+        function renderMyRecipes() {
+            const listEl = document.getElementById('myResultList');
+            const myRecipes = JSON.parse(localStorage.getItem('myRecipes')) || [];
+            listEl.innerHTML = '';
+            if (myRecipes.length === 0) {
+                listEl.innerHTML = '<li class="no-result">찜한 레시피가 없습니다.<br>하트(♡)를 눌러 추가해보세요!</li>';
+                return;
+            }
+            myRecipes.reverse().forEach(item => listEl.appendChild(createRecipeItem(item)));
+        }
+
+        // 3. 식단 플래너 로직
+        const dateInput = document.getElementById('plannerDate');
+        dateInput.value = new Date().toISOString().split('T')[0];
+        dateInput.addEventListener('change', loadMealPlan);
+
+        ['breakfast', 'lunch', 'dinner'].forEach(type => {
+            document.getElementById(`input-${type}`).addEventListener('input', function() {
+                saveMealPlan(type, this.value);
+                showSaveIndicator(type);
             });
         });
+
+        function saveMealPlan(type, value) {
+            const date = dateInput.value;
+            let allPlans = JSON.parse(localStorage.getItem('mealPlanner')) || {};
+            if (!allPlans[date]) { allPlans[date] = { breakfast: '', lunch: '', dinner: '' }; }
+            allPlans[date][type] = value;
+            localStorage.setItem('mealPlanner', JSON.stringify(allPlans));
+        }
+
+        function loadMealPlan() {
+            const date = dateInput.value;
+            const allPlans = JSON.parse(localStorage.getItem('mealPlanner')) || {};
+            const dayPlan = allPlans[date] || { breakfast: '', lunch: '', dinner: '' };
+            document.getElementById('input-breakfast').value = dayPlan.breakfast;
+            document.getElementById('input-lunch').value = dayPlan.lunch;
+            document.getElementById('input-dinner').value = dayPlan.dinner;
+        }
+
+        function showSaveIndicator(type) {
+            const indicator = document.getElementById(`save-${type}`);
+            indicator.classList.add('show');
+            setTimeout(() => { indicator.classList.remove('show'); }, 1500);
+        }
     </script>
 </body>
 </html>

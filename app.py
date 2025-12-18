@@ -7,8 +7,8 @@ app = Flask(__name__)
 # ==========================================
 # [중요] 발급받은 네이버 API 키를 여기에 입력하세요
 # ==========================================
-CLIENT_ID = "w2ysouqzNQzzrT_Y_h9L"
-CLIENT_SECRET = "ZeNkdw_bOm"
+CLIENT_ID = ""
+CLIENT_SECRET = ""
 
 def clean_html(text):
     """네이버 API 결과에 포함된 <b>, &quot; 같은 태그를 제거하는 함수"""
